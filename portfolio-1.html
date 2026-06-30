@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinayak C — Security Analyst</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080808;
+    --surface: #0e0e0e;
+    --border: #2a1010;
+    --accent: #ff2222;
+    --accent2: #ff6b35;
+    --warn: #ff4444;
+    --text: #f0e6e6;
+    --muted: #7a5555;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Space Grotesk', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2.5rem;
+    background: rgba(10, 12, 16, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 0.8rem;
+    font-family: var(--mono);
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--accent); }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8rem 2.5rem 4rem;
+    position: relative;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 2rem;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  h1 {
+    font-size: clamp(3rem, 8vw, 6.5rem);
+    font-weight: 700;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+  }
+
+  h1 .name-line { display: block; }
+  h1 .dim { color: var(--muted); font-weight: 300; }
+
+  .hero-sub {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #0a0c10;
+    font-weight: 600;
+  }
+
+  .btn-primary:hover { background: #00f0c0; transform: translateY(-1px); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── TERMINAL BLOCK (signature element) ── */
+  .terminal {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 420px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+  }
+
+  .terminal-bar {
+    background: #161b24;
+    padding: 0.6rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #f7604f; }
+  .dot-y { background: #f7c94f; }
+  .dot-g { background: #00d4aa; }
+
+  .terminal-title {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 0.7rem;
+  }
+
+  .terminal-body { padding: 1.2rem; line-height: 2; }
+
+  .t-prompt { color: var(--accent); }
+  .t-cmd { color: var(--text); }
+  .t-out { color: var(--muted); }
+  .t-val { color: var(--accent2); }
+  .t-warn { color: var(--warn); }
+  .t-cursor {
+    display: inline-block;
+    width: 8px; height: 1em;
+    background: var(--accent);
+    animation: blink 1s step-end infinite;
+    vertical-align: text-bottom;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ── SECTIONS ── */
+  section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 6rem 2.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 3rem;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* ── SKILLS ── */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  .skill-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.25rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .skill-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .skill-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+
+  .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .tag {
+    background: rgba(255, 34, 34, 0.08);
+    color: var(--text);
+    border: 1px solid rgba(255, 34, 34, 0.2);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+  }
+
+  /* ── PROJECTS ── */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.75rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .project-card:hover { border-color: rgba(0, 212, 170, 0.4); transform: translateY(-3px); }
+  .project-card:hover::before { opacity: 1; }
+
+  .project-num {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  .project-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+
+  .project-desc {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 1.25rem;
+  }
+
+  .project-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .tech-tag {
+    background: rgba(255, 107, 53, 0.1);
+    color: var(--accent2);
+    border: 1px solid rgba(255, 107, 53, 0.25);
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: 3px;
+  }
+
+  /* ── EXPERIENCE ── */
+  .exp-item {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    padding-bottom: 3rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .exp-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+  .exp-date {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    padding-top: 0.15rem;
+  }
+
+  .exp-role { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.2rem; }
+  .exp-org { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); margin-bottom: 1rem; }
+
+  .exp-list { list-style: none; }
+  .exp-list li {
+    font-size: 0.88rem;
+    color: var(--muted);
+    padding: 0.3rem 0;
+    padding-left: 1.2rem;
+    position: relative;
+    line-height: 1.6;
+  }
+
+  .exp-list li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-size: 0.7rem;
+    top: 0.35rem;
+  }
+
+  /* ── CERTS ── */
+  .certs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  .cert-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    transition: border-color 0.2s;
+  }
+
+  .cert-card:hover { border-color: var(--accent2); }
+
+  .cert-icon {
+    width: 36px; height: 36px;
+    border-radius: 6px;
+    background: rgba(255, 34, 34, 0.1);
+    border: 1px solid rgba(255, 34, 34, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .cert-name { font-size: 0.88rem; font-weight: 500; line-height: 1.4; }
+  .cert-org { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
+
+  /* ── CONTACT ── */
+  #contact {
+    text-align: center;
+    padding: 6rem 2.5rem 8rem;
+  }
+
+  #contact h2 { margin-bottom: 0.75rem; }
+
+  .contact-sub {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .contact-links {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 2rem;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  /* ── GLOW ORBS ── */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.12;
+  }
+
+  .orb-1 {
+    width: 500px; height: 500px;
+    background: #ff0000;
+    top: -100px; right: -100px;
+    opacity: 0.08;
+  }
+
+  .orb-2 {
+    width: 400px; height: 400px;
+    background: #aa0000;
+    bottom: 20%; left: -150px;
+    opacity: 0.08;
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    #hero { padding: 7rem 1.5rem 3rem; }
+    .terminal { display: none; }
+    section { padding: 4rem 1.5rem; }
+    .exp-item { grid-template-columns: 1fr; gap: 0.5rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .t-cursor { animation: none; }
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Ambient orbs -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-logo">VC://r00t</span>
+  <ul class="nav-links">
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#certs">Certs</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero" style="padding-top:8rem;">
+  <p class="hero-eyebrow">Security Analyst · Kerala, India</p>
+  <h1>
+    <span class="name-line">Vinayak C</span>
+    <span class="name-line dim">Breaking things</span>
+    <span class="name-line dim">to fix them.</span>
+  </h1>
+  <p class="hero-sub">
+    CS graduate with hands-on experience in VAPT, ethical hacking, and mobile security assessment. 
+    Seeking a SOC Analyst role where I can put analytical instincts to work against real threats.
+  </p>
+  <div class="hero-cta">
+    <a href="mailto:vinayakc409@gmail.com" class="btn btn-primary">↗ Get in touch</a>
+    <a href="#projects" class="btn btn-ghost">View projects</a>
+  </div>
+
+  <!-- Terminal -->
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="dot dot-r"></div>
+      <div class="dot dot-y"></div>
+      <div class="dot dot-g"></div>
+      <span class="terminal-title">root@kali:~# nmap</span>
+    </div>
+    <div class="terminal-body">
+      <div><span class="t-prompt">$ </span><span class="t-cmd">whoami</span></div>
+      <div class="t-out">→ <span class="t-val">security_analyst</span> | ethical_hacker</div>
+      <br>
+      <div><span class="t-prompt">$ </span><span class="t-cmd">cat skills.txt</span></div>
+      <div class="t-out">→ <span class="t-val">VAPT</span> · Burp Suite · Frida · MobSF</div>
+      <div class="t-out">→ <span class="t-val">Nmap</span> · Nessus · Wireshark</div>
+      <div class="t-out">→ <span class="t-val">Android</span> static/dynamic analysis</div>
+      <br>
+      <div><span class="t-prompt">$ </span><span class="t-cmd">nmap -sV target.app</span></div>
+      <div class="t-out">PORT   STATE  SERVICE</div>
+      <div><span class="t-warn">443/tcp open  https — scanning...</span></div>
+      <br>
+      <div><span class="t-prompt">$ </span><span class="t-cursor"></span></div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SKILLS -->
+<section id="skills">
+  <p class="section-label">01 / Skills</p>
+  <h2>Technical arsenal</h2>
+
+  <div class="skills-grid">
+    <div class="skill-card">
+      <p class="skill-label">Security Tools</p>
+      <div class="skill-tags">
+        <span class="tag">Burp Suite</span>
+        <span class="tag">Nmap</span>
+        <span class="tag">Nessus</span>
+        <span class="tag">Frida</span>
+        <span class="tag">MobSF</span>
+        <span class="tag">Wireshark</span>
+        <span class="tag">Gobuster</span>
+      </div>
+    </div>
+    <div class="skill-card">
+      <p class="skill-label">Operating Systems</p>
+      <div class="skill-tags">
+        <span class="tag">Kali Linux</span>
+        <span class="tag">Windows</span>
+        <span class="tag">Android</span>
+      </div>
+    </div>
+    <div class="skill-card">
+      <p class="skill-label">Virtualization</p>
+      <div class="skill-tags">
+        <span class="tag">VirtualBox</span>
+        <span class="tag">Genymotion</span>
+        <span class="tag">Android Studio</span>
+        <span class="tag">Metasploitable</span>
+      </div>
+    </div>
+    <div class="skill-card">
+      <p class="skill-label">VAPT Methodology</p>
+      <div class="skill-tags">
+        <span class="tag">OWASP Top 10</span>
+        <span class="tag">Manual Testing</span>
+        <span class="tag">Scripting</span>
+        <span class="tag">Bash Automation</span>
+        <span class="tag">Recon</span>
+      </div>
+    </div>
+    <div class="skill-card">
+      <p class="skill-label">Mobile Security</p>
+      <div class="skill-tags">
+        <span class="tag">APK Analysis</span>
+        <span class="tag">Static Analysis</span>
+        <span class="tag">Dynamic Analysis</span>
+        <span class="tag">Runtime Hooking</span>
+      </div>
+    </div>
+    <div class="skill-card">
+      <p class="skill-label">Soft Skills</p>
+      <div class="skill-tags">
+        <span class="tag">Analytical Thinking</span>
+        <span class="tag">Communication</span>
+        <span class="tag">Leadership</span>
+        <span class="tag">Adaptability</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- PROJECTS -->
+<section id="projects">
+  <p class="section-label">02 / Projects</p>
+  <h2>Selected work</h2>
+
+  <div class="projects-grid">
+    <div class="project-card">
+      <p class="project-num">PRJ-001</p>
+      <p class="project-title">Web Application VAPT</p>
+      <p class="project-desc">
+        Full-scope penetration test on a production web application via Synnefo Academy. 
+        Identified Stored XSS, Clickjacking, and security misconfigurations using 
+        OWASP Top 10 methodology. Delivered a structured vulnerability report with remediation steps.
+      </p>
+      <div class="project-tech">
+        <span class="tech-tag">Burp Suite</span>
+        <span class="tech-tag">Nmap</span>
+        <span class="tech-tag">Gobuster</span>
+        <span class="tech-tag">OWASP Top 10</span>
+        <span class="tech-tag">XSS</span>
+        <span class="tech-tag">Clickjacking</span>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <p class="project-num">PRJ-002</p>
+      <p class="project-title">Subdomain Enumeration Tool</p>
+      <p class="project-desc">
+        Developed an automated Bash script for subdomain discovery, integrating Assetfinder 
+        and HTTP probing to identify live subdomains. Exported results for use in active 
+        reconnaissance workflows.
+      </p>
+      <div class="project-tech">
+        <span class="tech-tag">Bash</span>
+        <span class="tech-tag">Assetfinder</span>
+        <span class="tech-tag">HTTP Probing</span>
+        <span class="tech-tag">Recon</span>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <p class="project-num">PRJ-003</p>
+      <p class="project-title">Mobile APK Security Assessment</p>
+      <p class="project-desc">
+        Conducted a Phase 2 penetration test on a mobile banking application (Manappuram OGL). 
+        Covered static analysis, manifest review, hardcoded secrets, Frida-based runtime hooking, 
+        and network traffic interception via MobSF.
+      </p>
+      <div class="project-tech">
+        <span class="tech-tag">Frida</span>
+        <span class="tech-tag">MobSF</span>
+        <span class="tech-tag">Android</span>
+        <span class="tech-tag">Genymotion</span>
+        <span class="tech-tag">Static Analysis</span>
+        <span class="tech-tag">Burp Suite</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <p class="section-label">03 / Experience</p>
+  <h2>Where I've worked</h2>
+
+  <div class="exp-item">
+    <div>
+      <p class="exp-date">March 2026</p>
+    </div>
+    <div>
+      <p class="exp-role">Cyber Security Intern</p>
+      <p class="exp-org">Synnefo Solutions Pvt. Ltd. · Kochi, Kerala</p>
+      <ul class="exp-list">
+        <li>Assisted in vulnerability assessment and penetration testing of web applications and networks.</li>
+        <li>Performed security assessments using Burp Suite, Nmap, and Wireshark.</li>
+        <li>Participated in identifying and documenting security vulnerabilities across targets.</li>
+        <li>Gained hands-on experience in ethical hacking methodologies and best practices.</li>
+        <li>Prepared security reports and remediation recommendations under senior analyst guidance.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- CERTS + EDUCATION -->
+<section id="certs">
+  <p class="section-label">04 / Credentials</p>
+  <h2>Certs & education</h2>
+
+  <div class="certs-grid" style="margin-bottom: 2.5rem;">
+    <div class="cert-card">
+      <div class="cert-icon">🛡️</div>
+      <div>
+        <p class="cert-name">Introduction to the Threat Landscape 3.0</p>
+        <p class="cert-org">Fortinet Training Institute</p>
+      </div>
+    </div>
+    <div class="cert-card">
+      <div class="cert-icon">🔐</div>
+      <div>
+        <p class="cert-name">Getting Started in Cybersecurity 3.0</p>
+        <p class="cert-org">Fortinet Training Institute</p>
+      </div>
+    </div>
+    <div class="cert-card">
+      <div class="cert-icon">🎓</div>
+      <div>
+        <p class="cert-name">Advanced Diploma in Cyber Security</p>
+        <p class="cert-org">Synnefo Solutions Pvt. Ltd. · Jul 2025 – Mar 2026</p>
+      </div>
+    </div>
+    <div class="cert-card">
+      <div class="cert-icon">📘</div>
+      <div>
+        <p class="cert-name">BSc Computer Science</p>
+        <p class="cert-org">Assabah Arts and Science College · 2022 – 2025</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- CONTACT -->
+<section id="contact">
+  <p class="section-label" style="text-align:center;">05 / Contact</p>
+  <h2>Let's connect</h2>
+  <p class="contact-sub">Open to SOC Analyst roles and cybersecurity opportunities.<br>Drop a message and I'll get back quickly.</p>
+  <div class="contact-links">
+    <a href="mailto:vinayakc409@gmail.com" class="btn btn-primary">✉ vinayakc409@gmail.com</a>
+    <a href="tel:+918943614557" class="btn btn-ghost">📞 +91 8943614557</a>
+    <a href="#" class="btn btn-ghost">LinkedIn ↗</a>
+    <a href="#" class="btn btn-ghost">GitHub ↗</a>
+  </div>
+</section>
+
+<footer>
+  <p>Built with intention · Vinayak C · 2026</p>
+</footer>
+
+</body>
+</html>
